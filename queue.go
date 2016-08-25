@@ -3,6 +3,7 @@ package main
 import (
   "database/sql"
   "fmt"
+  "time"
 )
 
 var WorkQueue = make(chan Message, 100)
@@ -10,14 +11,19 @@ var WorkQueue = make(chan Message, 100)
 // this ensures that we do not block MessageCollector from dumping its items
 
 func MessageCollector(db *sql.DB) {
-  rows, _ := db.Query(`SELECT token, message, platform FROM posts where platform = 'linkedin' and expires < current_timestamp and posted = false`)
-  for rows.Next() {
-    var token, message, platform string
-    if err := rows.Scan(&token, &message, &platform); err != nil {
-      fmt.Println(err)
+  ticker := time.NewTicker(time.Minute * 30)
+  for _ = range ticker.C {
+
+    rows, _ := db.Query(`SELECT token, message, platform FROM posts where platform = 'linkedin' and expires < current_timestamp and posted = false`)
+    for rows.Next() {
+      var token, message, platform string
+      if err := rows.Scan(&token, &message, &platform); err != nil {
+        fmt.Println(err)
+      }
+      messageitem := Message{message, token, platform}
+      WorkQueue <- messageitem
+      fmt.Println("Message Item Queued")
     }
-    messageitem := Message{message, token, platform}
-    WorkQueue <- messageitem
-    fmt.Println("Message Item Queued")
+
   }
 }

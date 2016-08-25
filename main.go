@@ -3,8 +3,7 @@ package main
 import (
   "flag"
   "fmt"
-  "net/http"
-  "github.com/stevenchung/stevenconcurrency/db"
+  "github.com/stevenchung/alpacamicro/db"
 )
 
 var (
