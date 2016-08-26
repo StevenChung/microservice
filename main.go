@@ -11,10 +11,8 @@ var (
 )
 
 func main() {
-  // Parse the command-line flags.
   flag.Parse()
   db := dbconnection.Connect()
-  // Start the dispatcher.
   fmt.Println("Starting the dispatcher")
   StartDispatcher(*NWorkers, db)
 
@@ -22,5 +20,4 @@ func main() {
 
   MessageCollector(db)
 
-  // no HTTP server quite yet
 }

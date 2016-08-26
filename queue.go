@@ -7,14 +7,12 @@ import (
 )
 
 var WorkQueue = make(chan Message, 100)
-// buffered channel that allows work requests to collect (queue)
-// this ensures that we do not block MessageCollector from dumping its items
 
 func MessageCollector(db *sql.DB) {
-  ticker := time.NewTicker(time.Minute * 30)
+  ticker := time.NewTicker(time.Minute * 120)
   for _ = range ticker.C {
 
-    rows, _ := db.Query(`SELECT token, message, platform FROM posts where platform = 'linkedin' and expires < current_timestamp and posted = false`)
+    rows, _ := db.Query(`SELECT token, message, platform FROM posts where expires < current_timestamp and posted = false`)
     for rows.Next() {
       var token, message, platform string
       if err := rows.Scan(&token, &message, &platform); err != nil {
