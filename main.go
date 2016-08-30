@@ -3,7 +3,7 @@ package main
 import (
   "flag"
   "fmt"
-  "github.com/stevenchung/alpacamicro/db"
+  "github.com/stevenchung/stevenNotes/db"
 )
 
 var (
@@ -11,13 +11,18 @@ var (
 )
 
 func main() {
+  // Parse the command-line flags.
   flag.Parse()
-  db := dbconnection.Connect()
+  db := dbconnection.PostgresConnect()
+  rdb := dbconnection.RedisConnect()
+  fmt.Println(rdb)
+  // Start the dispatcher.
   fmt.Println("Starting the dispatcher")
   StartDispatcher(*NWorkers, db)
 
   fmt.Println("Registering the collector")
 
-  MessageCollector(db)
+  MessageCollector(db, rdb)
 
+  // no HTTP server quite yet
 }

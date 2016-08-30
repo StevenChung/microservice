@@ -27,10 +27,12 @@ type Worker struct {
 func (w *Worker) Start(db *sql.DB) {
   go func(){
     for {
+      // Add itself (a single worker's work queue) to the overall queue of Workers
       w.WorkerQueue <- w.Messages
 
       select {
       case msg := <- w.Messages:
+        // ******** WHERE IT IS DIFFERENT
         fmt.Printf("worker%d: Doing work on %s", w.ID, msg.Platform)
         fmt.Println(time.Now())
 
@@ -65,6 +67,7 @@ func (w *Worker) Start(db *sql.DB) {
         time.Sleep(time.Second * 5)
         fmt.Println(time.Now())
       case <- w.QuitChan:
+        // we've been told to discontinue
         fmt.Printf("worker%d: STOPPING", w.ID)
         return
       }

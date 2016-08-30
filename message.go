@@ -10,7 +10,7 @@ import (
 )
 
 type Message struct {
-  MessageURL, Token, Platform string
+  MessageURL, Token, Platform, QueueType string
 }
 
 type LinkedInCall struct {
@@ -52,6 +52,9 @@ func (m *Message) LinkedIn() ([]byte, LinkedInResponse) {
 
   b := new(bytes.Buffer)
   json.NewEncoder(b).Encode(bod)
+  // equivalent to Marshal, except intended for streams
+  // NewEncoder accepts an io.Writer, so it's generally intended for streams
+  // Encode writes the JSON encoding of the argument passed to that stream
   url := `https://api.linkedin.com/v1/people/~/shares?oauth2_access_token=`+m.Token+`&format=json`
   req, err := http.NewRequest("POST", url, b)
   req.Header.Set("Content-Type", "application/json")
@@ -63,12 +66,15 @@ func (m *Message) LinkedIn() ([]byte, LinkedInResponse) {
     log.Fatal(err.Error())
   }
   defer resp.Body.Close()
+  // defer moves this to the end of the function
+
 
   var lrs LinkedInResponse
   fmt.Println("response Status: ", resp.Status)
   fmt.Println("response Headers:", resp.Header)
   body, _ := ioutil.ReadAll(resp.Body)
   json.Unmarshal(body, &lrs)
+  // decode body out of JSON into &lrs
   fmt.Println("response Body:", string(body))
   fmt.Println(lrs)
   return body, lrs;
