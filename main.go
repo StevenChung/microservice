@@ -3,7 +3,7 @@ package main
 import (
   "flag"
   "fmt"
-  "github.com/stevenchung/stevenNotes/db"
+  "github.com/stevenchung/alpacamicro/db"
 )
 
 var (
