@@ -5,6 +5,7 @@ import (
   "fmt"
   "time"
   "gopkg.in/redis.v4"
+  "encoding/json"
 )
 
 var WorkQueue = make(chan Message, 100)
@@ -13,6 +14,7 @@ var WorkQueue = make(chan Message, 100)
 
 func MessageCollector(db *sql.DB, rds *redis.Client) {
   ticker := time.NewTicker(time.Minute * 120)
+
   for _ = range ticker.C {
     // postgres queue
     rows, _ := db.Query(`SELECT token, message, platform FROM posts where expires < current_timestamp and posted = false`)
@@ -27,8 +29,11 @@ func MessageCollector(db *sql.DB, rds *redis.Client) {
     }
 
     // redis queue
-    rdsMessage, rdsPlatform, rdsToken := rds.RPop("messages").String(), rds.RPop("platforms").String(), rds.RPop("tokens").String()
-    msgitem := Message{rdsMessage, rdsToken, rdsPlatform, "redis"}
+    rdsstring := rds.RPop("messages").String();
+    var msgitem Message
+    json.Unmarshal([]byte(rdsstring), &msgitem)
+    msgitem.QueueType = "redis"
     WorkQueue <- msgitem
   }
+
 }
